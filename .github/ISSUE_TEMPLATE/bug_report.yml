@@ -1,0 +1,58 @@
+name: Bug report
+description: Report a reproducible problem in Desktop MCP Inspector
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please include enough detail to reproduce the issue locally.
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: Release version, tag, or commit SHA where the issue occurs.
+      placeholder: v0.1.0 or commit SHA
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Windows 11
+        - macOS
+        - Linux
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: List the exact steps, profile settings, and MCP server command used.
+      placeholder: |
+        1. Configure profile ...
+        2. Click Connect
+        3. Run tools/list
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Paste relevant logs or attach screenshots. Mask secrets before sharing.
+      render: text

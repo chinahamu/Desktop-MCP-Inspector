@@ -1,0 +1,13 @@
+{
+  "id": "mvp-demo-stdio",
+  "name": "MVP Demo MCP Server",
+  "transport": "stdio",
+  "command": "python",
+  "args": [
+    "examples/servers/mvp_demo_server.py"
+  ],
+  "env": {},
+  "cwd": ".",
+  "timeoutMs": 30000,
+  "notes": "Demo profile for validating initialize, tools/list, and tools/call once the profile/connect UI is available."
+}

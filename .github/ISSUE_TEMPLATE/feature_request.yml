@@ -1,0 +1,44 @@
+name: Feature request
+description: Propose an enhancement for Desktop MCP Inspector
+title: "feat: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing an improvement. Please describe the workflow you want to support.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What developer or reviewer workflow does this improve?
+      placeholder: I want to inspect ...
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the UI, CLI, transport, report, or configuration change.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Include workarounds or other designs if relevant.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - MCP core
+        - Transport
+        - Timeline
+        - Tools/resources/prompts UI
+        - Security scan
+        - Reports
+        - Packaging/release
+        - Documentation
+        - Other

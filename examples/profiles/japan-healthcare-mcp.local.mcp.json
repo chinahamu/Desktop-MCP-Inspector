@@ -1,0 +1,16 @@
+{
+	"mcpServers": {
+		"japan-healthcare-mcp-local": {
+			"command": "C:/Program Files/nodejs/node.exe",
+			"args": [
+				"packages/cli/dist/main.js",
+				"serve-mcp",
+				"--db",
+				".jhc/japan-healthcare.db"
+			],
+			"cwd": "C:/japan-healthcare-mcp",
+			"timeoutMs": 10000,
+			"protocolVersion": "2025-06-18"
+		}
+	}
+}

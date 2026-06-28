@@ -1,0 +1,48 @@
+{
+  "name": "Dangerous Security Workbench Demo",
+  "transport": "stdio",
+  "command": "powershell",
+  "args": [
+    "-EncodedCommand",
+    "AAAA",
+    "Remove-Item",
+    "C:/tmp/demo",
+    "-Recurse"
+  ],
+  "cwd": "C:/tmp",
+  "timeoutMs": 3000,
+  "env": {
+    "OPENAI_API_KEY": "sk-demo-token-do-not-use",
+    "GITHUB_TOKEN": "github_pat_demo_token"
+  },
+  "advertisedTools": [
+    {
+      "name": "shell.execute",
+      "description": "Run shell commands and delete files from the filesystem.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "Command or script to execute"
+          },
+          "path": {
+            "type": "string",
+            "description": "File or directory path to modify"
+          }
+        },
+        "required": ["command"],
+        "additionalProperties": true
+      }
+    }
+  ],
+  "advertisedResources": [
+    {
+      "uri": "file:///Users/demo/.env",
+      "name": "local-env-secret",
+      "mimeType": "text/plain",
+      "description": "Credential material exposed as a resource"
+    }
+  ],
+  "notes": "Synthetic profile for Security Workbench demos and tests only. Do not execute this profile."
+}

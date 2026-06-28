@@ -1,0 +1,201 @@
+name: Release Packages
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    name: Build & Package Windows
+    runs-on: windows-latest
+    timeout-minutes: 40
+
+    env:
+      CMAKE_BUILD_PARALLEL_LEVEL: 2
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up MSVC developer command prompt
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Set up Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v5
+
+      - name: Install NSIS
+        run: choco install nsis -y
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.7.2'
+          host: windows
+          target: desktop
+          arch: win64_msvc2019_64
+          cache: true
+
+      - name: Configure
+        run: cmake --preset release -DDMI_BUILD_TESTS=OFF -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR"
+
+      - name: Build
+        run: cmake --build --preset release --parallel
+
+      - name: Install
+        run: cmake --install build/release --prefix "${{ github.workspace }}/build/release/install"
+
+      - name: Package NSIS Installer
+        run: cpack --config build/release/CPackConfig.cmake -G NSIS -B package
+
+      - name: Package ZIP Archive
+        run: cpack --config build/release/CPackConfig.cmake -G ZIP -B package
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-packages
+          path: |
+            package/*.exe
+            package/*.zip
+
+  build-macos:
+    name: Build & Package macOS
+    runs-on: macos-latest
+    timeout-minutes: 40
+
+    env:
+      CMAKE_BUILD_PARALLEL_LEVEL: 3
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v5
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.7.2'
+          host: mac
+          target: desktop
+          arch: clang_64
+          cache: true
+
+      - name: Configure
+        run: cmake --preset release -DDMI_BUILD_TESTS=OFF -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR"
+
+      - name: Build
+        run: cmake --build --preset release --parallel
+
+      - name: Install
+        run: cmake --install build/release --prefix "${{ github.workspace }}/build/release/install"
+
+      - name: Package DMG
+        run: cpack --config build/release/CPackConfig.cmake -G DragNDrop -B package
+
+      - name: Package TGZ
+        run: cpack --config build/release/CPackConfig.cmake -G TGZ -B package
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-packages
+          path: |
+            package/*.dmg
+            package/*.tar.gz
+
+  build-linux:
+    name: Build & Package Linux
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    env:
+      CMAKE_BUILD_PARALLEL_LEVEL: 2
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Qt dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dev libxkbcommon-dev libegl1-mesa-dev libdbus-1-3 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-xfixes0 libxcb-xkb1 libxkbcommon-x11-0
+
+      - name: Set up Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v5
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.7.2'
+          host: linux
+          target: desktop
+          arch: linux_gcc_64
+          cache: true
+
+      - name: Configure
+        run: cmake --preset release -DDMI_BUILD_TESTS=OFF -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR"
+
+      - name: Build
+        run: cmake --build --preset release --parallel
+
+      - name: Install
+        run: cmake --install build/release --prefix "${{ github.workspace }}/build/release/install"
+
+      - name: Package DEB
+        run: cpack --config build/release/CPackConfig.cmake -G DEB -B package
+
+      - name: Package TGZ
+        run: cpack --config build/release/CPackConfig.cmake -G TGZ -B package
+
+      - name: Package AppImage
+        run: |
+          chmod +x scripts/package-linux-appimage.sh
+          rm -f "$QT_ROOT_DIR/plugins/sqldrivers/libqsqlmimer.so"
+          bash scripts/package-linux-appimage.sh build/release package
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-packages
+          path: |
+            package/*.deb
+            package/*.tar.gz
+            package/*.AppImage
+
+  publish-release:
+    name: Publish Release
+    needs: [build-windows, build-macos, build-linux]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Consolidate release assets
+        run: |
+          mkdir -p release-assets
+          find artifacts -type f -exec cp {} release-assets/ \;
+          ls -lh release-assets
+
+      - name: Create GitHub Release and Upload Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-assets/*
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

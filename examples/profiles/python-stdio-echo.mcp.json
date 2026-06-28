@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "python-stdio-echo": {
+      "command": "python",
+      "args": [
+        "examples/mcp-servers/stdio-echo-server.py"
+      ],
+      "cwd": "C:/Users/ktwri/source/repos/chinahamu/Desktop-MCP-Inspector",
+      "timeoutMs": 5000,
+      "protocolVersion": "2025-06-18"
+    }
+  }
+}
